@@ -9,10 +9,10 @@ import ProtectedRoutes from './ProtectedRoutes'
 import PublicOnlyRoutes from './PublicRoutes'
 import useAuthStore from '../store/authStore'
 import ReportsPage from '../pages/Reports'
+import Users from '../pages/UserManagement'
 
 function AppRoutes() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
-  console.log(isAuthenticated)
 
   return (
     <Routes>
@@ -47,6 +47,7 @@ function AppRoutes() {
         <Route path={paths.news} element={<News />} />
         <Route path={paths.members} element={<Members />} />
         <Route path={paths.report} element={<ReportsPage />} />
+        <Route path={paths.users} element={<Users />} />
       </Route>
       {/* Optional catch-all route */}
       <Route

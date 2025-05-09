@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 
@@ -15,7 +15,7 @@ const Editor: React.FC<EditorProps> & { modules: any; formats: string[] } = ({
   id,
   placeholder,
 }) => {
-  const [theme, setTheme] = useState<string>('snow')
+  // const [theme, setTheme] = useState<string>('snow')
 
   const handleChange = (html: string) => {
     onChange(html)
@@ -52,7 +52,7 @@ const Editor: React.FC<EditorProps> & { modules: any; formats: string[] } = ({
     <div>
       <style>{responsiveStyles}</style>
       <ReactQuill
-        theme={theme}
+        // theme={theme}
         onChange={handleChange}
         value={value}
         id={id}

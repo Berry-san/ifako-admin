@@ -5,9 +5,9 @@ import { apiService } from '../services/ApiService'
 type Payload = object
 
 // Generic fetch for list data
-function useFetchData(endpoint: string) {
+function useFetchData(endpoint: string, invalidateKey?: string) {
   return useQuery({
-    queryKey: [endpoint],
+    queryKey: [invalidateKey || endpoint],
     queryFn: () => apiService.get(endpoint),
     initialData: [],
   })
@@ -36,10 +36,13 @@ function usePostData(endpoint: string, invalidateKey?: string) {
 }
 
 // Generic PUT/PATCH mutation
-function useUpdateData(endpoint: string, id: string, invalidateKey?: string) {
+function useUpdateData(endpoint: string, invalidateKey?: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: Payload) => apiService.update(endpoint, id, body),
+    // Accept an object containing both ID and body
+    mutationFn: ({ id, body }: { id: string; body: Payload | FormData }) =>
+      apiService.update(endpoint, id, body),
+
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [invalidateKey || endpoint],

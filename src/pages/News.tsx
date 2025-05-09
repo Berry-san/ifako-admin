@@ -8,14 +8,26 @@ import CreateNewsForm from '../components/molecules/CreateNewsForm'
 import SearchSortBar from '../components/molecules/SearchSortBar'
 import SectionHeader from '../components/molecules/SectionHeader'
 import { Pencil, Trash } from 'lucide-react'
-import { useFetchData, useDeleteData } from '../hooks/useApiHooks'
+import {
+  useFetchData,
+  useDeleteData,
+  useUpdateData,
+} from '../hooks/useApiHooks'
+import RoleBasedAccess from '../components/atoms/RoleBasedAccess'
 
 const News: React.FC = () => {
-  const { data: newsList = [], isLoading } = useFetchData('/main/news')
-  const { mutate: deleteNews } = useDeleteData(
-    '/main/delete/news',
-    '/main/all/news'
+  const { data: newsList = [], isLoading } = useFetchData(
+    '/dashboard/all/news',
+    'news-api'
   )
+  const { mutate: deleteNews } = useDeleteData(
+    '/dashboard/delete/news',
+    'news-api'
+  )
+  const { mutate: approveNews } = useUpdateData(
+    '/dashboard/edit/news',
+    'news-api'
+  ) // ID passed later
 
   const [searchTerm, setSearchTerm] = useState('')
   const [sortAsc, setSortAsc] = useState(false)
@@ -53,6 +65,16 @@ const News: React.FC = () => {
     })
     setShowDeleteModal(false)
     setItemToDelete(null)
+  }
+
+  const handleApprove = (id: string) => {
+    approveNews(
+      { id, body: { approved: true } }, // ✅ proper shape now
+      {
+        onSuccess: () => toast.success('News approved successfully'),
+        onError: () => toast.error('Failed to approve news'),
+      }
+    )
   }
 
   if (isLoading) {
@@ -93,23 +115,36 @@ const News: React.FC = () => {
                 />
               )}
               <div className="p-4 space-y-2">
-                <div className="flex justify-between items-start space-x-4">
+                <div className="flex flex-col justify-between items-start space-x-4">
+                  <RoleBasedAccess allowedRoles={['superadmin', 'admin']}>
+                    <div className="flex items-center justify-between space-x-4 mb-4">
+                      {news.hidden && (
+                        <button
+                          onClick={() => handleApprove(news.id)}
+                          className="text-green-600 hover:text-green-800 text-sm border border-green-600 rounded px-2 py-1"
+                        >
+                          Approve
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDelete(news.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash size={18} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditData(news)
+                          setShowEditModal(true)
+                        }}
+                        className="text-blue-500 hover:text-blue-700"
+                      >
+                        <Pencil size={18} />
+                      </button>
+                    </div>
+                  </RoleBasedAccess>
+
                   <h3 className="font-semibold">{news.header}</h3>
-                  <button
-                    onClick={() => handleDelete(news.id)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <Trash size={18} />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEditData(news)
-                      setShowEditModal(true)
-                    }}
-                    className="text-blue-500 hover:text-blue-700"
-                  >
-                    <Pencil size={18} />
-                  </button>
                 </div>
                 <p className="text-sm text-gray-500">
                   {new Date(news.date).toLocaleDateString()}

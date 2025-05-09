@@ -9,12 +9,16 @@ import SearchSortBar from '../components/molecules/SearchSortBar'
 import SectionHeader from '../components/molecules/SectionHeader'
 import { Pencil, Trash } from 'lucide-react'
 import { useFetchData, useDeleteData } from '../hooks/useApiHooks'
+import RoleBasedAccess from '../components/atoms/RoleBasedAccess'
 
 const Members: React.FC = () => {
-  const { data: members = [], isLoading } = useFetchData('/main/all/member')
+  const { data: members = [], isLoading } = useFetchData(
+    '/dashboard/all/member',
+    'member-api'
+  )
   const { mutate: deleteMember } = useDeleteData(
-    '/main/delete/member',
-    '/main/all/member'
+    '/dashboard/delete/member',
+    'member-api'
   )
 
   const [searchTerm, setSearchTerm] = useState('')
@@ -122,24 +126,26 @@ const Members: React.FC = () => {
                         </p>
                       </div>
 
-                      <div className="space-x-3 flex">
-                        <button
-                          onClick={() => {
-                            setEditData(member)
-                            setShowEditModal(true)
-                          }}
-                          className=" text-blue-500 hover:text-blue-700 cursor-pointer"
-                          title="Edit"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          className="text-red-500 hover:text-red-700 cursor-pointer"
-                          onClick={() => handleDelete(member.id)}
-                        >
-                          <Trash size={18} />
-                        </button>
-                      </div>
+                      <RoleBasedAccess allowedRoles={['superadmin', 'admin']}>
+                        <div className="space-x-3 flex">
+                          <button
+                            onClick={() => {
+                              setEditData(member)
+                              setShowEditModal(true)
+                            }}
+                            className=" text-blue-500 hover:text-blue-700 cursor-pointer"
+                            title="Edit"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            className="text-red-500 hover:text-red-700 cursor-pointer"
+                            onClick={() => handleDelete(member.id)}
+                          >
+                            <Trash size={18} />
+                          </button>
+                        </div>
+                      </RoleBasedAccess>
                     </div>
                   </div>
                 </div>

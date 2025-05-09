@@ -21,6 +21,12 @@ export const UserSidebarLinks = [
     roles: ['superadmin', 'admin', 'user'],
   },
   {
+    href: paths.users,
+    icon: <User2 className="w-5 h-5" />,
+    label: 'User Management',
+    roles: ['superadmin'],
+  },
+  {
     href: paths.report,
     icon: <AlbumIcon className="w-5 h-5" />,
     label: 'Report',

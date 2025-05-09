@@ -10,7 +10,7 @@ import TextAreaField from '../atoms/TextAreaField'
 type NewsFormInputs = {
   header: string
   content: string
-  date: string
+  date?: string
 }
 
 interface CreateNewsFormProps {
@@ -35,17 +35,15 @@ const CreateNewsForm: React.FC<CreateNewsFormProps> = ({
   } = useForm<NewsFormInputs>()
 
   const [file, setFile] = useState<File | null>(null)
-  console.log(file)
   const [existingImage, setExistingImage] = useState<string>('')
 
   const { mutate: createNews, isPending } = usePostData(
-    '/main/create',
-    '/main/all/news'
+    '/dashboard/create',
+    'news-api'
   )
   const { mutate: updateNews, isPending: isPendingUpdate } = useUpdateData(
-    '/main/edit/news',
-    id || '',
-    '/main/all/news'
+    '/dashboard/edit/news',
+    'news-api'
   )
 
   useEffect(() => {
@@ -60,6 +58,22 @@ const CreateNewsForm: React.FC<CreateNewsFormProps> = ({
     }
   }, [initialData, setValue])
 
+  // const header = watch('header')
+  // const content = watch('content')
+  // const date = watch('date')
+  // const type = 'news'
+  // const image =
+  //
+  // const dataToSubmit = {
+  //   header,
+  //   content,
+  //   date,
+  //   type,
+  //   image,
+  // }
+
+  // if (file) formData.append('image', file)
+
   const onSubmit = (data: NewsFormInputs) => {
     if (!isEdit && !file) {
       toast.error('Please upload an image')
@@ -69,23 +83,54 @@ const CreateNewsForm: React.FC<CreateNewsFormProps> = ({
     const formData = new FormData()
     formData.append('header', data.header)
     formData.append('content', JSON.stringify(data.content))
-    formData.append('date', data.date)
+    // formData.append('content', data.content)
+    // formData.append('date', data.date)
     formData.append('type', 'news')
     if (file) formData.append('image', file)
 
-    const mutation = isEdit ? updateNews : createNews
+    // const mutation = isEdit ? updateNews : createNews
 
-    mutation(formData, {
-      onSuccess: () => {
-        toast.success(`News ${isEdit ? 'updated' : 'created'} successfully`)
-        reset()
-        setFile(null)
-        setExistingImage('')
-        onClose?.()
-      },
-      onError: () =>
-        toast.error(`Failed to ${isEdit ? 'update' : 'create'} news`),
-    })
+    // mutation(
+    //   { id: id || '', body: formData },
+    //   {
+    //     onSuccess: () => {
+    //       toast.success(`News ${isEdit ? 'updated' : 'created'} successfully`)
+    //       reset()
+    //       setFile(null)
+    //       setExistingImage('')
+    //       onClose?.()
+    //     },
+    //     onError: () =>
+    //       toast.error(`Failed to ${isEdit ? 'update' : 'create'} news`),
+    //   }
+    // )
+
+    if (isEdit) {
+      updateNews(
+        { id: id || '', body: formData },
+        {
+          onSuccess: () => {
+            toast.success('News updated successfully')
+            reset()
+            setFile(null)
+            setExistingImage('')
+            onClose?.()
+          },
+          onError: () => toast.error('Failed to update news'),
+        }
+      )
+    } else {
+      createNews(formData, {
+        onSuccess: () => {
+          toast.success('News created successfully')
+          reset()
+          setFile(null)
+          setExistingImage('')
+          onClose?.()
+        },
+        onError: () => toast.error('Failed to create news'),
+      })
+    }
   }
 
   return (
@@ -95,12 +140,12 @@ const CreateNewsForm: React.FC<CreateNewsFormProps> = ({
         {...register('header', { required: 'Headline is required' })}
         error={errors.header?.message}
       />
-      <InputField
+      {/* <InputField
         label="Date"
         type="date"
         {...register('date', { required: 'Date is required' })}
         error={errors.date?.message}
-      />
+      /> */}
       <TextAreaField
         label="Content"
         rows={5}

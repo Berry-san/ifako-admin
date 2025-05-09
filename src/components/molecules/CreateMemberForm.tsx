@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { usePostData, useUpdateData } from '../../hooks/useApiHooks'
 import InputField from '../atoms/InputField'
 import SelectField from '../atoms/SelectField'
@@ -17,7 +17,7 @@ interface CreateMemberFormProps {
   onClose?: () => void
   isEdit?: boolean
   id?: string
-  initialData?: any
+  initialData?: Partial<MemberFormInputs & { imageUrl?: string }>
 }
 
 const CreateMemberForm: React.FC<CreateMemberFormProps> = ({
@@ -35,21 +35,25 @@ const CreateMemberForm: React.FC<CreateMemberFormProps> = ({
   } = useForm<MemberFormInputs>()
 
   const { mutate: createMember, isPending } = usePostData(
-    '/main/create',
-    '/main/all/member'
+    '/dashboard/create',
+    'member-api'
   )
   const { mutate: updateMember, isPending: isPendingUpdate } = useUpdateData(
-    '/main/edit/member',
-    id || '',
-    '/main/all/member'
+    '/dashboard/edit/member',
+    'member-api'
   )
+
+  const [existingImage, setExistingImage] = useState<string>('')
 
   useEffect(() => {
     if (initialData) {
-      setValue('name', initialData.name || '')
-      setValue('position', initialData.position || '')
-      setValue('office', initialData.office || '')
-      setValue('rank', initialData.rank || 0)
+      Object.entries(initialData).forEach(([key, value]) => {
+        if (key !== 'imageUrl') {
+          setValue(key as keyof MemberFormInputs, value as string)
+        } else {
+          setExistingImage(typeof value === 'string' ? value : '')
+        }
+      })
     }
   }, [initialData, setValue])
 
@@ -64,17 +68,45 @@ const CreateMemberForm: React.FC<CreateMemberFormProps> = ({
       formData.append('image', data.image[0])
     }
 
-    const mutationFn = isEdit ? updateMember : createMember
+    // const mutationFn = isEdit ? updateMember : createMember
 
-    mutationFn(formData, {
-      onSuccess: () => {
-        toast.success(`Member ${isEdit ? 'updated' : 'created'} successfully`)
-        reset()
-        onClose?.()
-      },
-      onError: () =>
-        toast.error(`Failed to ${isEdit ? 'update' : 'create'} member`),
-    })
+    if (isEdit) {
+      updateMember(
+        { id: id || '', body: formData },
+        {
+          onSuccess: () => {
+            toast.success('News updated successfully')
+            reset()
+            setExistingImage('')
+            onClose?.()
+          },
+          onError: () => toast.error('Failed to update news'),
+        }
+      )
+    } else {
+      createMember(formData, {
+        onSuccess: () => {
+          toast.success('News created successfully')
+          reset()
+          setExistingImage('')
+          onClose?.()
+        },
+        onError: () => toast.error('Failed to create news'),
+      })
+    }
+
+    // mutationFn(
+    //   { id: id || '', body: formData },
+    //   {
+    //     onSuccess: () => {
+    //       toast.success(`Member ${isEdit ? 'updated' : 'created'} successfully`)
+    //       reset()
+    //       onClose?.()
+    //     },
+    //     onError: () =>
+    //       toast.error(`Failed to ${isEdit ? 'update' : 'create'} member`),
+    //   }
+    // )
   }
 
   return (
@@ -111,6 +143,15 @@ const CreateMemberForm: React.FC<CreateMemberFormProps> = ({
 
       <div>
         <label className="text-sm font-medium">Image File</label>
+        {existingImage && (
+          <div className="mb-2">
+            <img
+              src={existingImage}
+              alt="Preview"
+              className="h-32 w-full object-cover rounded border"
+            />
+          </div>
+        )}
         <input
           type="file"
           accept="image/*"

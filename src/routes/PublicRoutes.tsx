@@ -9,7 +9,6 @@ interface PublicOnlyRouteProps {
 
 const PublicOnlyRoute: React.FC<PublicOnlyRouteProps> = ({ children }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
-  console.log(isAuthenticated)
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />

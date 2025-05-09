@@ -35,7 +35,6 @@ const Login: React.FC = () => {
       {
         onSuccess: (response) => {
           login(response.admin, response.token) // if response has both
-          console.log(response)
           toast.success('Login successful')
           // Optionally save token or user here
           navigate('/dashboard/members')

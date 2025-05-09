@@ -6,6 +6,7 @@ import { toast } from 'react-toastify'
 import DeleteConfirmModal from '../components/atoms/DeleteConfirmModal'
 import { useFetchData, useDeleteData } from '../hooks/useApiHooks'
 import { Trash } from 'lucide-react'
+import RoleBasedAccess from '../components/atoms/RoleBasedAccess'
 
 const ReportsPage: React.FC = () => {
   const [category, setCategory] = useState('')
@@ -17,7 +18,6 @@ const ReportsPage: React.FC = () => {
     isLoading,
     refetch,
   } = useFetchData(`/report/get?category=${category}`)
-  console.log(reports)
 
   const { mutate: deleteReport } = useDeleteData(
     '/report',
@@ -75,12 +75,14 @@ const ReportsPage: React.FC = () => {
               <p className="text-sm text-gray-500 mt-1">{report.phoneNumber}</p>
               <p className="text-xs text-gray-400 mt-1">{report.address}</p>
 
-              <button
-                className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-                onClick={() => handleDelete(report.id)}
-              >
-                <Trash size={18} />
-              </button>
+              <RoleBasedAccess allowedRoles={['superadmin', 'admin']}>
+                <button
+                  className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                  onClick={() => handleDelete(report.id)}
+                >
+                  <Trash size={18} />
+                </button>
+              </RoleBasedAccess>
             </div>
           ))}
         </div>

@@ -4,14 +4,9 @@ import useAuthStore from '../store/authStore'
 import { isTokenExpired } from '../utils/tokenUtils'
 
 const BASE_URL = 'https://ifako.onrender.com/api/'
-const API_KEY = 'your_api_key_here' // Replace with actual API key
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    'x-api-key': API_KEY,
-  },
 })
 
 apiClient.interceptors.request.use((config) => {
@@ -65,7 +60,14 @@ export const apiService = {
       })
     ),
 
-  update: (endpoint: string, id: string, body: object) =>
-    handleRequest(apiClient.put(`${endpoint}/${id}`, body)), // Update
+  update: (endpoint: string, id: string, body: object | FormData) =>
+    handleRequest(
+      apiClient.put(`${endpoint}/${id}`, body, {
+        headers:
+          body instanceof FormData
+            ? { 'Content-Type': 'multipart/form-data' }
+            : undefined,
+      })
+    ),
   delete: (fullPath: string) => handleRequest(apiClient.delete(fullPath)),
 }
